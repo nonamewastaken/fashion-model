@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Decision Predictor - AI Fashion Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Fashion Decision Predictor specific styles */
+        .predictor-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2rem 0;
+        }
+
+        .predictor-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: #6c757d;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .toggle-btn.active {
+            background: #6366f0;
+            color: white;
+            box-shadow: 0 2px 8px rgba(99, 102, 240, 0.3);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background: rgba(99, 102, 240, 0.1);
+            color: #6366f0;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f0;
+            box-shadow: 0 0 0 3px rgba(99, 102, 240, 0.1);
+        }
+
+        .form-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #6366f0;
+            box-shadow: 0 0 0 3px rgba(99, 102, 240, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #6366f0 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(99, 102, 240, 0.3);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 240, 0.4);
+        }
+
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+
+        /* CSV Upload Section Styles */
+        .csv-upload-section {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .upload-icon {
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-icon i {
+            font-size: 4rem;
+            color: #6c757d;
+            opacity: 0.7;
+        }
+
+        .upload-description {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .file-upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .choose-file-btn {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            color: #6366f0;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .choose-file-btn:hover {
+            background: #e9ecef;
+            border-color: #6366f0;
+            transform: translateY(-1px);
+        }
+
+        .file-name {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* Prediction Results Modal */
+        .prediction-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        /* Progress Modal */
+        .progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+
+        .progress-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-title {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #6366f0, #8b5cf6);
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: progress-animation 2s ease-in-out infinite;
+        }
+
+        @keyframes progress-animation {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        .progress-text {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .step-icon.active {
+            background: #6366f0;
+            color: white;
+        }
+
+        .step-icon.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .prediction-results h3,
+        .csv-results h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .result-item {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #6366f0;
+        }
+
+        .result-item strong {
+            color: #495057;
+        }
+
+        .close-btn {
+            background: #6366f0;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #5a5fdb;
+            transform: translateY(-1px);
+        }
+
+        .results-table {
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .results-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .results-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .predictor-content {
+                padding: 0 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .toggle-btn {
+                padding: 0.75rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .page-subtitle {
+                font-size: 1rem;
+            }
+
+            .form-card {
+                padding: 1rem;
+            }
+
+            .toggle-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <i class="fas fa-star"></i>
+                    <span>AI Fashion</span>
+                </div>
+                <div class="nav-links">
+                    <a href="/" class="nav-link" data-route="home">Home</a>
+                    <a href="/fashion-decision-predictor" class="nav-link active" data-route="fashion-decision-predictor">Fashion Decision Predictor</a>
+                    <a href="/trend-insights" class="nav-link" data-route="trend-insights">Trend Insights</a>
+                    <a href="/data-verifier" class="nav-link" data-route="data-verifier">Data Verifier</a>
+                    <a href="/revenue-insights" class="nav-link" data-route="revenue-insights">Revenue Insights</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-icons">
+                    <div class="tooltip">
+                        <button class="icon-btn">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <span class="tooltiptext">Settings</span>
+                    </div>
+                    <div class="dropdown">
+                        <div class="tooltip">
+                            <button class="icon-btn dropdown-toggle">
+                                <i class="fas fa-question-circle"></i>
+                            </button>
+                            <span class="tooltiptext">Help</span>
+                        </div>
+                        <div class="dropdown-content">
+                            <a href="/user-guide" data-route="user-guide">User Guide</a>
+                        </div>
+                    </div>
+                    <div class="tooltip">
+                        <button class="icon-btn">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                        <span class="tooltiptext">Notifications</span>
+                    </div>
+                    <div class="tooltip">
+                        <button class="icon-btn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                        <span class="tooltiptext">Profile</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="predictor-container">
+        <div class="predictor-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Fashion Decision Predictor</h1>
+                <p class="page-subtitle">Utilize cutting-edge AI to forecast consumer behavior and optimize your fashion strategies for future success.</p>
+            </div>
+
+            <!-- Toggle Buttons -->
+            <div class="toggle-container">
+                <div class="toggle-buttons">
+                    <button class="toggle-btn active" data-mode="single">Single</button>
+                    <button class="toggle-btn" data-mode="csv">CSV File</button>
+                </div>
+            </div>
+
+            <!-- Form Section -->
+            <div class="form-card" id="single-form">
+                <!-- User Information Section -->
+                <div class="form-section">
+                    <h2 class="section-title">User Information</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Age</label>
+                            <input type="text" class="form-input" placeholder="e.g., 28">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <select class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-input" placeholder="e.g., New York, USA">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fashion Item Information Section -->
+                <div class="form-section">
+                    <h2 class="section-title">Fashion Item Information</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Brand</label>
+                            <input type="text" class="form-input" placeholder="e.g., Zara, Nike, H&M, Gucci, Uniqlo, Adidas">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fashion Item Type</label>
+                            <input type="text" class="form-input" placeholder="e.g., Shoes, Dress, T-shirt, Jeans, Jacket, Bag">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Price (USD)</label>
+                            <input type="number" class="form-input" placeholder="e.g., 75.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Customer Rating (1-5)</label>
+                            <input type="number" class="form-input" placeholder="e.g., 4.5" min="1" max="5" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Trendy Score (1-100)</label>
+                            <input type="number" class="form-input" placeholder="e.g., 75" min="1" max="100" value="50">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Customer Sentiment</label>
+                            <textarea class="form-input form-textarea" placeholder="e.g., 'Love the comfort and style!'"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Predict Button -->
+                <button class="predict-btn">
+                    Predict Purchase Decision
+                </button>
+            </div>
+
+            <!-- CSV Form Section (Hidden by default) -->
+            <div class="form-card" id="csv-form" style="display: none;">
+                <div class="csv-upload-section">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h2 class="section-title">Upload CSV File</h2>
+                    <p class="upload-description">
+                        Effortlessly predict purchase decisions for multiple items by uploading a CSV file with your dataset.
+                    </p>
+                    <div class="file-upload-container">
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                        <button class="choose-file-btn" onclick="document.getElementById('csv-file-input').click()">
+                            Choose File
+                        </button>
+                        <span class="file-name" id="file-name">No file chosen</span>
+                    </div>
+                </div>
+                <button class="predict-btn">
+                    Predict Purchase Decision
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div class="progress-modal" id="progress-modal" style="display: none;">
+        <div class="progress-content">
+            <h3 class="progress-title">Processing Prediction...</h3>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-steps">
+                <div class="step">
+                    <div class="step-icon" id="step-1">1</div>
+                    <span>Validating</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon" id="step-2">2</div>
+                    <span>Analyzing</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon" id="step-3">3</div>
+                    <span>Predicting</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon" id="step-4">4</div>
+                    <span>Complete</span>
+                </div>
+            </div>
+            <p class="progress-text" id="progress-text">Validating form data...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Fashion Decision Predictor specific JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle button functionality
+            const toggleButtons = document.querySelectorAll('.toggle-btn');
+            const singleForm = document.getElementById('single-form');
+            const csvForm = document.getElementById('csv-form');
+
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    toggleButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Show/hide appropriate form
+                    const mode = this.getAttribute('data-mode');
+                    if (mode === 'single') {
+                        singleForm.style.display = 'block';
+                        csvForm.style.display = 'none';
+                    } else if (mode === 'csv') {
+                        singleForm.style.display = 'none';
+                        csvForm.style.display = 'block';
+                    }
+                });
+            });
+
+            // Form input focus effects
+            const formInputs = document.querySelectorAll('.form-input, .form-select');
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+
+            // File upload functionality
+            const csvFileInput = document.getElementById('csv-file-input');
+            const fileName = document.getElementById('file-name');
+            
+            if (csvFileInput) {
+                csvFileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        fileName.textContent = this.files[0].name;
+                        fileName.style.color = '#6366f0';
+                        fileName.style.fontWeight = '500';
+                    } else {
+                        fileName.textContent = 'No file chosen';
+                        fileName.style.color = '#6c757d';
+                        fileName.style.fontWeight = 'normal';
+                    }
+                });
+            }
+
+            // Predict button click handler
+            const predictButtons = document.querySelectorAll('.predict-btn');
+            predictButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const formCard = this.closest('.form-card');
+                    const isSingleForm = formCard.id === 'single-form';
+                    
+                    if (isSingleForm) {
+                        handleSinglePrediction(this);
+                    } else {
+                        handleCSVPrediction(this);
+                    }
+                });
+            });
+
+            // Handle single prediction
+            function handleSinglePrediction(button) {
+                // Get form data using more robust selectors
+                const singleForm = document.getElementById('single-form');
+                
+                // Find inputs by their position and type
+                const inputs = singleForm.querySelectorAll('input');
+                const textareas = singleForm.querySelectorAll('textarea');
+                const selects = singleForm.querySelectorAll('select');
+                
+                const formData = {
+                    age: inputs[0]?.value || '',  // First input (Age)
+                    gender: selects[0]?.value || '',  // First select (Gender)
+                    location: inputs[1]?.value || '',  // Second input (Location)
+                    brand: inputs[2]?.value || '',  // Third input (Brand)
+                    fashion_item: inputs[3]?.value || '',  // Fourth input (Fashion Item Type)
+                    price: inputs[4]?.value || '',  // Fifth input (Price)
+                    rating: inputs[5]?.value || '',  // Sixth input (Rating)
+                    trendy_score: inputs[6]?.value || 50,  // Seventh input (Trendy Score)
+                    sentiment_text: textareas[0]?.value || ''  // First textarea (Sentiment)
+                };
+
+                // Debug: Log form data
+                console.log('Form data:', formData);
+                console.log('Inputs found:', inputs.length);
+                console.log('Textareas found:', textareas.length);
+                console.log('Selects found:', selects.length);
+                
+                // Validate form data
+                const emptyFields = [];
+                Object.entries(formData).forEach(([key, value]) => {
+                    if (!value || !value.trim()) {
+                        emptyFields.push(key);
+                    }
+                });
+                
+                if (emptyFields.length > 0) {
+                    alert('Please fill in all fields: ' + emptyFields.join(', '));
+                    return;
+                }
+
+                // Show progress modal
+                showProgressModal();
+                
+                // Add loading state to button
+                const originalText = button.textContent;
+                button.textContent = 'Processing...';
+                button.style.opacity = '0.7';
+                button.style.pointerEvents = 'none';
+
+                // Send prediction request with progress updates
+                updateProgressStep(1, 'Validating form data...');
+                
+                setTimeout(() => {
+                    updateProgressStep(2, 'Analyzing sentiment...');
+                    
+                    setTimeout(() => {
+                        updateProgressStep(3, 'Making prediction...');
+                        
+                        fetch('/predict-single', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(formData)
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Prediction response:', data);
+                            updateProgressStep(4, 'Prediction complete!');
+                            
+                            setTimeout(() => {
+                                hideProgressModal();
+                                if (data.error) {
+                                    alert('Error: ' + data.error);
+                                } else {
+                                    showPredictionResults(data);
+                                }
+                            }, 500);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            console.error('Error details:', error.toString());
+                            hideProgressModal();
+                            alert('An error occurred during prediction: ' + error.message);
+                        })
+                        .finally(() => {
+                            button.textContent = originalText;
+                            button.style.opacity = '1';
+                            button.style.pointerEvents = 'auto';
+                        });
+                    }, 1000);
+                }, 1000);
+            }
+
+            // Progress modal functions
+            function showProgressModal() {
+                const progressModal = document.getElementById('progress-modal');
+                progressModal.style.display = 'flex';
+                
+                // Reset all steps
+                for (let i = 1; i <= 4; i++) {
+                    const stepIcon = document.getElementById(`step-${i}`);
+                    stepIcon.className = 'step-icon';
+                }
+                
+                // Set first step as active
+                document.getElementById('step-1').className = 'step-icon active';
+                document.getElementById('progress-text').textContent = 'Validating form data...';
+            }
+            
+            function updateProgressStep(stepNumber, text) {
+                // Update progress text
+                document.getElementById('progress-text').textContent = text;
+                
+                // Update step icons
+                for (let i = 1; i <= 4; i++) {
+                    const stepIcon = document.getElementById(`step-${i}`);
+                    if (i < stepNumber) {
+                        stepIcon.className = 'step-icon completed';
+                    } else if (i === stepNumber) {
+                        stepIcon.className = 'step-icon active';
+                    } else {
+                        stepIcon.className = 'step-icon';
+                    }
+                }
+            }
+            
+            function hideProgressModal() {
+                const progressModal = document.getElementById('progress-modal');
+                progressModal.style.display = 'none';
+            }
+            
+            // Handle CSV prediction
+            function handleCSVPrediction(button) {
+                const fileInput = document.getElementById('csv-file-input');
+                if (!fileInput.files.length) {
+                    alert('Please select a CSV file first');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                // Add loading state
+                const originalText = button.textContent;
+                button.textContent = 'Processing...';
+                button.style.opacity = '0.7';
+                button.style.pointerEvents = 'none';
+
+                // Send prediction request
+                fetch('/predict-csv', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    } else {
+                        showCSVResults(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during prediction');
+                })
+                .finally(() => {
+                    button.textContent = originalText;
+                    button.style.opacity = '1';
+                    button.style.pointerEvents = 'auto';
+                });
+            }
+
+            // Show prediction results
+            function showPredictionResults(data) {
+                const resultsHTML = `
+                    <div class="prediction-results">
+                        <h3>Prediction Results</h3>
+                        <div class="result-item">
+                            <strong>Purchase Decision:</strong> ${data.purchase_decision}
+                        </div>
+                        <div class="result-item">
+                            <strong>Purchase Probability:</strong> ${data.purchase_probability}
+                        </div>
+                        <div class="result-item">
+                            <strong>Confidence:</strong> ${data.confidence}
+                        </div>
+                        <div class="result-item">
+                            <strong>Predicted Sentiment:</strong> ${data.predicted_sentiment || 'N/A'}
+                        </div>
+                        <div class="result-item">
+                            <strong>Original Text:</strong> "${data.original_sentiment_text || 'N/A'}"
+                        </div>
+                    </div>
+                `;
+
+                // Create modal or overlay to show results
+                const modal = document.createElement('div');
+                modal.className = 'prediction-modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        ${resultsHTML}
+                        <button class="close-btn" onclick="this.parentElement.parentElement.remove()">Close</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            // Show CSV results
+            function showCSVResults(data) {
+                let resultsHTML = `
+                    <div class="csv-results">
+                        <h3>CSV Prediction Results</h3>
+                        <p>Processed ${data.processed_rows} out of ${data.total_rows} rows</p>
+                        <div class="results-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Row</th>
+                                        <th>Purchase Decision</th>
+                                        <th>Probability</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                data.results.forEach(result => {
+                    if (result.error) {
+                        resultsHTML += `
+                            <tr>
+                                <td>${result.row}</td>
+                                <td colspan="2" style="color: red;">${result.error}</td>
+                            </tr>
+                        `;
+                    } else {
+                        resultsHTML += `
+                            <tr>
+                                <td>${result.row}</td>
+                                <td>${result.purchase_decision}</td>
+                                <td>${result.purchase_probability}</td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                resultsHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                // Create modal to show results
+                const modal = document.createElement('div');
+                modal.className = 'prediction-modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        ${resultsHTML}
+                        <button class="close-btn" onclick="this.parentElement.parentElement.remove()">Close</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+        });
+    </script>
+</body>
+</html> 
